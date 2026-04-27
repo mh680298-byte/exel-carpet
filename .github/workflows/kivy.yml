@@ -7,16 +7,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Install dependencies
+      - name: Install system packages
         run: |
           sudo apt update
           sudo apt install -y python3-pip openjdk-17-jdk unzip
+          pip install --upgrade pip
           pip install buildozer cython
 
-      - name: Accept Android licenses
-        run: yes | buildozer android update
+      - name: Install Android SDK components
+        run: |
+          mkdir -p ~/.android
+          touch ~/.android/repositories.cfg
+          yes | sdkmanager --licenses || true
 
       - name: Build APK
         run: |
@@ -27,4 +32,3 @@ jobs:
         with:
           name: apk
           path: bin/*.apk
-
