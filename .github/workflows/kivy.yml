@@ -12,51 +12,42 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # ✅ نصب Java 17 واقعی
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 17
+          java-version: "17"
 
       - name: Install system dependencies
         run: |
           sudo apt update
-          sudo apt install -y python3-pip zip unzip
+          sudo apt install -y \
+            build-essential \
+            git \
+            zip \
+            unzip \
+            openjdk-17-jdk \
+            python3-pip \
+            python3-setuptools \
+            python3-wheel \
+            libffi-dev \
+            libssl-dev
 
-      - name: Install Buildozer
+      - name: Install Python tools
         run: |
-          python3 -m pip install --upgrade pip
-          pip install buildozer cython
+          pip install --upgrade pip
+          pip install buildozer
+          pip install "Cython<3.0"
 
-      # ✅ نصب Android SDK
-      - name: Install Android SDK
+      - name: Build with Buildozer
         run: |
-          mkdir -p $HOME/android-sdk/cmdline-tools
-
-          wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
-
-          unzip commandlinetools-linux-11076708_latest.zip -d $HOME/android-sdk/tmp
-
-          mkdir -p $HOME/android-sdk/cmdline-tools/latest
-          mv $HOME/android-sdk/tmp/cmdline-tools/* $HOME/android-sdk/cmdline-tools/latest/
-
-          rm -rf $HOME/android-sdk/tmp
-
-          export ANDROID_HOME=$HOME/android-sdk
-          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
-
-          yes | sdkmanager --sdk_root=$ANDROID_HOME --licenses
-          yes | sdkmanager --sdk_root=$ANDROID_HOME "platform-tools" "platforms;android-33" "build-tools;33.0.0"
-
-      # ✅ ساخت APK
-      - name: Build APK
-        run: |
-          export ANDROID_HOME=$HOME/android-sdk
-          export PATH=$ANDROID_HOME/platform-tools:$PATH
           buildozer android debug
 
-      # ✅ آپلود APK
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
