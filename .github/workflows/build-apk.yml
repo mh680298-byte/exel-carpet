@@ -1,4 +1,4 @@
-name: Build Python APK
+name: Build APK with Docker
 
 on:
   push:
@@ -8,50 +8,32 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    container:
+      image: kivy/buildozer:latest
+      
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout
+      uses: actions/checkout@v4
     
-    - name: Setup Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.10'
-    
-    - name: Install Buildozer dependencies
+    - name: Build APK with Buildozer
       run: |
-        pip install buildozer cython
-        
-        sudo apt-get update
-        sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev cmake libffi-dev libssl-dev
-    
-    - name: Configure Android SDK licenses (Critical Fix)
-      run: |
-        # پوشه SDK را بساز
-        mkdir -p ~/.buildozer/android/platform/android-sdk/licenses
-        
-        # لیسانس SDK را قبول کن
-        echo "24333f8a63b6825ea9c5514f83c2829b004d1fee" > ~/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
-        echo "84831b9409646a918e30573bab4c9c91346d8abd" > ~/.buildozer/android/platform/android-sdk/licenses/android-sdk-preview-license
-        
-        # لیسانس Build-Tools را قبول کن
-        mkdir -p ~/.android
-        echo "count=1" > ~/.android/repositories.cfg
-        echo "d56f5187479451eabf01fb78af6dfcb131a1481e" > ~/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
-    
-    - name: Build APK
-      run: |
+        # اگر فایل spec وجود نداشت، بساز
         if [ ! -f "buildozer.spec" ]; then
           buildozer init
         fi
         
-        # اصلاح تنظیمات
-        sed -i 's/ndk = .*/ndk = 23b/g' buildozer.spec
-        sed -i 's/sdk = .*/sdk = 30/g' buildozer.spec
-        sed -i 's/android.ndk_version = .*/android.ndk_version = 23b/g' buildozer.spec
-        sed -i 's/android.sdk_path = .*/android.sdk_path = ~\/.buildozer\/android\/platform\/android-sdk/g' buildozer.spec
+        # تنظیمات لازم
+        sed -i 's/requirements = .*/requirements = python3,kivy==2.2.1,openpyxl==3.1.2/g' buildozer.spec
+        sed -i 's/package.name = .*/package.name = rugreader/g' buildozer.spec
+        sed -i 's/package.domain = .*/package.domain = org.example/g' buildozer.spec
+        sed -i 's/android.permissions = .*/android.permissions = READ_EXTERNAL_STORAGE/g' buildozer.spec
+        sed -i 's/android.api = .*/android.api = 30/g' buildozer.spec
+        sed -i 's/android.minapi = .*/android.minapi = 21/g' buildozer.spec
+        sed -i 's/android.ndk = .*/android.ndk = 23b/g' buildozer.spec
         
         # ساخت APK
-        buildozer android debug deploy run
-    
+        buildozer -v android debug
+        
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
