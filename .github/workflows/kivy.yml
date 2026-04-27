@@ -10,7 +10,6 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      # Force python-for-android to use NDK r25b (required!)
       ANDROID_NDK_HOME: /home/runner/.buildozer/android/platform/android-ndk-r25b
       ANDROID_NDK_ROOT: /home/runner/.buildozer/android/platform/android-ndk-r25b
       ANDROID_NDK: /home/runner/.buildozer/android/platform/android-ndk-r25b
@@ -31,9 +30,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y \
             zip unzip git python3 python3-pip openjdk-17-jdk \
-            automake autoconf libtool m4
+            automake autoconf libtool libtool-bin m4
           
-          # Remove GitHub’s preinstalled NDK to avoid conflict with r25b
+          # Remove GitHub's preinstalled NDK (27/29) – incompatible
           sudo rm -rf /usr/local/lib/android/sdk/ndk/*
 
           pip install --upgrade pip
