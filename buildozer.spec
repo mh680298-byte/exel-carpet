@@ -11,7 +11,7 @@ source.include_exts = py, png, jpg, kv, atlas
 # نسخه برنامه
 version = 1.0
 # آیکن اپ (اختیاری)
-icon.filename = icon.png
+#icon.filename = icon.png
 
 # در صورت نیاز به فایل‌های اضافی داخل apk
 # source.include_patterns = assets/*
