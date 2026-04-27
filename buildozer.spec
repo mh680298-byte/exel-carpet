@@ -14,7 +14,8 @@ android.minapi = 21
 android.ndk = 23b
 android.sdk = 30
 android.ndk_version = 23b
-
+# این خط جدید را اضافه کن
+android.accept_sdk_license = True
 
 [buildozer]
 log_level = 2
