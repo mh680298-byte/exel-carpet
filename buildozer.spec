@@ -13,9 +13,8 @@ android.api = 30
 android.minapi = 21
 android.ndk = 23b
 android.sdk = 30
-
-# برای Ubuntu 24.04 این خط رو اضافه کن
 android.ndk_version = 23b
+
 
 [buildozer]
 log_level = 2
