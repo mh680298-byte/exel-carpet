@@ -15,7 +15,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
     
-    - name: Build APK with Buildozer
+    - name: Build APK with Buildozer (force root)
       run: |
         # اگر فایل spec وجود نداشت، بساز
         if [ ! -f "buildozer.spec" ]; then
@@ -31,8 +31,12 @@ jobs:
         sed -i 's/android.minapi = .*/android.minapi = 21/g' buildozer.spec
         sed -i 's/android.ndk = .*/android.ndk = 23b/g' buildozer.spec
         
+        # غیرفعال کردن چک روت با متغیر محیطی
+        export BUILDOZER_NON_INTERACTIVE=1
+        export BUILDOZER_ROOT_IGNORE=1
+        
         # ساخت APK
-        buildozer -v android debug
+        printf 'y\n' | buildozer -v android debug
         
     - name: Upload APK
       uses: actions/upload-artifact@v4
