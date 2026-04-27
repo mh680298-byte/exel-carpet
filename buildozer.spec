@@ -25,7 +25,9 @@ warn_on_root = 1
 
 [app:android]
 
-android.api = 30
+android.api = 33
 android.minapi = 21
 android.arch = armeabi-v7a
 android.ndk = 25b
+android.sdk = 33
+android.accept_sdk_license = True
