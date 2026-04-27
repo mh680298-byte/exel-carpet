@@ -15,7 +15,25 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
     
-    - name: Build APK with Buildozer (force root)
+    - name: Force accept Android SDK licenses
+      run: |
+        # ایجاد پوشه لیسانس
+        mkdir -p /github/home/.android
+        touch /github/home/.android/repositories.cfg
+        
+        # قبول اجباری لیسانس‌ها با yes command
+        mkdir -p /github/home/.buildozer/android/platform/android-sdk/licenses
+        yes | /github/home/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager --sdk_root=/github/home/.buildozer/android/platform/android-sdk --licenses || true
+        
+        # همچنین از طریق پایتون
+        python3 -c "
+import subprocess
+import os
+os.environ['JAVA_HOME'] = '/usr/lib/jvm/java-17-openjdk-amd64'
+subprocess.run(['/github/home/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager', '--sdk_root=/github/home/.buildozer/android/platform/android-sdk', '--licenses'], input='y\ny\ny\ny\ny\ny\ny\ny\ny\ny\n', text=True)
+" || true
+    
+    - name: Build APK
       run: |
         # اگر فایل spec وجود نداشت، بساز
         if [ ! -f "buildozer.spec" ]; then
@@ -30,12 +48,11 @@ jobs:
         sed -i 's/android.api = .*/android.api = 30/g' buildozer.spec
         sed -i 's/android.minapi = .*/android.minapi = 21/g' buildozer.spec
         sed -i 's/android.ndk = .*/android.ndk = 23b/g' buildozer.spec
+        sed -i 's/android.accept_sdk_license = .*/android.accept_sdk_license = True/g' buildozer.spec
         
-        # غیرفعال کردن چک روت با متغیر محیطی
+        # غیرفعال کردن چک روت
         export BUILDOZER_NON_INTERACTIVE=1
         export BUILDOZER_ROOT_IGNORE=1
-        
-        # ساخت APK
         printf 'y\n' | buildozer -v android debug
         
     - name: Upload APK
