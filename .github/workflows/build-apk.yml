@@ -5,27 +5,20 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      # استفاده از اکشن آماده که همه چیز را مدیریت می‌کند
+      - name: Build APK with Buildozer
+        uses: ArtemSBulgakov/buildozer-action@v1
+        id: buildozer
         with:
-          python-version: '3.10'
-
-      - name: Install Buildozer dependencies
-        run: |
-          sudo apt update
-          sudo apt install -y git zip unzip openjdk-17-jdk python3-pip \
-            autoconf libtool pkg-config zlib1g-dev libncurses5-dev \
-            libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
-          pip install buildozer
-
-      - name: Build APK
-        run: buildozer android debug
-
-      - name: Upload APK
+          command: buildozer android debug
+          # در صورت نیاز می‌توانید مسیر buildozer.spec را مشخص کنید
+          buildozer_version: stable
+      
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: carpet-viewer-apk
-          path: bin/*.apk
+          name: package
+          path: ${{ steps.buildozer.outputs.filename }}
