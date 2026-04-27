@@ -1,55 +1,44 @@
-name: Build APK
+name: Build Kivy APK
 
 on:
   push:
     branches: [ "main" ]
+  workflow_dispatch:
 
 jobs:
-  build:
-    runs-on: ubuntu-22.04
+  build-apk:
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v3
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.10"
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
 
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: "17"
+    - name: Install system dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y git zip unzip openjdk-17-jdk libffi-dev libssl-dev
 
-      - name: Install system dependencies
-        run: |
-          sudo apt update
-          sudo apt install -y \
-            build-essential \
-            git \
-            zip \
-            unzip \
-            openjdk-17-jdk \
-            python3-pip \
-            python3-setuptools \
-            python3-wheel \
-            libffi-dev \
-            libssl-dev
+    - name: Install Buildozer + Cython (compatible versions)
+      run: |
+        pip install --upgrade pip
+        pip install buildozer
+        pip install "Cython==0.29.36"
+        pip install "setuptools==68.2.2"
 
-      - name: Install Python tools
-        run: |
-          pip install --upgrade pip
-          pip install buildozer
-          pip install "Cython<3.0"
+    - name: Create .buildozer directory
+      run: mkdir -p .buildozer
 
-      - name: Build with Buildozer
-        run: |
-          buildozer android debug
+    - name: Build APK
+      run: |
+        buildozer android debug
 
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: kivy-apk
-          path: bin/*.apk
+    - name: Upload APK
+      uses: actions/upload-artifact@v3
+      with:
+        name: CarpetMap-APK
+        path: .buildozer/android/platform/build-arm64-v8a/dists/*/*.apk
