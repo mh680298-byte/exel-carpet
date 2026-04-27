@@ -1,24 +1,33 @@
-name: Build Android APK
+name: Build APK
 on: [push, workflow_dispatch]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04          # نسخه‌ای که libtinfo5 را دارد
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      # استفاده از اکشن آماده که همه چیز را مدیریت می‌کند
-      - name: Build APK with Buildozer
-        uses: ArtemSBulgakov/buildozer-action@v1
-        id: buildozer
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          command: buildozer android debug
-          # در صورت نیاز می‌توانید مسیر buildozer.spec را مشخص کنید
-          buildozer_version: stable
-      
-      - name: Upload APK artifact
+          python-version: '3.9'
+
+      - name: Install system dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y git zip unzip openjdk-17-jdk python3-pip \
+            autoconf libtool pkg-config zlib1g-dev libncurses5-dev \
+            libtinfo5 cmake libffi-dev libssl-dev
+
+      - name: Install Buildozer
+        run: pip install buildozer
+
+      - name: Build APK
+        run: buildozer android debug
+
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: package
-          path: ${{ steps.buildozer.outputs.filename }}
+          name: carpet-viewer-apk
+          path: bin/*.apk
